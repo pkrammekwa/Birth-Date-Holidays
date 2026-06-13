@@ -42,7 +42,7 @@ public with sharing class BirthdateHolidaySearchController {
         } catch (BirthdateHolidayException exceptionMessage) {
             throw new AuraHandledException(exceptionMessage.getMessage());
         } catch (Exception exceptionMessage) {
-            throw new AuraHandledException('Something went wrong while processing the birthdate holiday search.');
-        }
+                throw new AuraHandledException(exceptionMessage.getMessage());
+            }
     }
 }
