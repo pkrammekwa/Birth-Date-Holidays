@@ -438,7 +438,7 @@ The project includes a Salesforce deployment manifest at:
 
 ```text
 manifest/package.xml
----
+```
 ---
 
 ## How to Use
