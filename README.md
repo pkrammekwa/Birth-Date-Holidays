@@ -546,6 +546,7 @@ manifest/
 | Added public holiday highlighting for matching birthdate holidays                           | pkrammekwa | Jun 13, 2026 |     1.7 |
 | Added Calendarific test coverage and integration metadata                                   | pkrammekwa | Jun 13, 2026 |     1.8 |
 | Added missing ID tracking fields, Calendarific metadata, named credential, and app metadata | pkrammekwa | Jun 13, 2026 |     1.9 |
+| Add permission set access for Birth Date Holidays                                           | pkrammekwa | Jun 13, 2026 |     2.0 |
 
 ---
 
