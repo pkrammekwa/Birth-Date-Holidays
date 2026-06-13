@@ -15,7 +15,7 @@
                 name="idNumber"
                 label="South African ID Number"
                 value={idNumber}
-                placeholder="Example: 9001015009087"
+                placeholder="Example: 9001015009086"
                 message-when-value-missing="Please enter a South African ID Number."
                 onchange={handleIdNumberChange}
                 maxlength="13"
@@ -47,13 +47,18 @@
                             <dt>Citizenship</dt>
                             <dd>{decodedIdDetails.citizenship}</dd>
                         </div>
+
+                        <div class="decoded-row">
+                            <dt>Search Count</dt>
+                            <dd>{decodedIdDetails.searchCount}</dd>
+                        </div>
                     </dl>
                 </div>
             </template>
 
             <div class="actions">
                 <lightning-button
-                    label="Search"
+                    label={searchButtonLabel}
                     variant="brand"
                     onclick={handleSearch}
                     disabled={isSearchDisabled}
