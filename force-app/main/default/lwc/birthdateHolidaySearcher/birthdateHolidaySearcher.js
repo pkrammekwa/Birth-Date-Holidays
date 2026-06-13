@@ -63,7 +63,14 @@ export default class BirthdateHolidaySearcher extends LightningElement {
                 searchCount: response.searchCount
             };
 
-            this.holidays = response.holidays || [];
+            this.holidays = (response.holidays || []).map((holiday) => ({
+                ...holiday,
+                cardClass: holiday.matchesBirthDate
+                    ? 'holiday-card matching-holiday-card'
+                    : 'holiday-card',
+                matchLabel: holiday.matchesBirthDate ? 'Matches date of birth' : ''
+            }));
+
             this.validationMessage = response.message;
         } catch (error) {
             this.decodedIdDetails = undefined;

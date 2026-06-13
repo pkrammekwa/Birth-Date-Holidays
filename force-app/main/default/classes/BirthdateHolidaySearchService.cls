@@ -11,7 +11,7 @@
  *  Date          │   Author      │   Change
  * ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
  *  Jun 13, 2026  │ pkrammekwa    │ Initial version
- *  Jun 13, 2026  │ pkrammekwa    │ Updated for USERSTORY-004 to retrieve and return public holidays
+ *  Jun 13, 2026  │ pkrammekwa    │ Updated for USERSTORY-004 to retrieve, flag, and return public holidays
  * ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
  */
 public with sharing class BirthdateHolidaySearchService {
@@ -42,7 +42,7 @@ public with sharing class BirthdateHolidaySearchService {
 
     /**
      * Author      : pkrammekwa
-     * Description : Processes the full birthdate holiday search by retrieving holidays first, then saving or updating the ID query record.
+     * Description : Processes the full birthdate holiday search by retrieving holidays first, flagging matching holidays, then saving or updating the ID query record.
      *
      * @param idNumber    The South African ID number submitted from the Lightning Web Component.
      * @param dateOfBirth The decoded date of birth from the ID number.
@@ -58,10 +58,14 @@ public with sharing class BirthdateHolidaySearchService {
     ) {
         validateRequiredDetails(idNumber, dateOfBirth, gender, saCitizen);
 
-        Integer yearValue = getYearFromDateOfBirth(dateOfBirth);
+        Date birthDate = getBirthDate(dateOfBirth);
+        Integer yearValue = birthDate.year();
 
         List<CalendarificHolidayService.Holiday> holidays =
             CalendarificHolidayService.getSouthAfricanPublicHolidays(yearValue);
+
+        List<CalendarificHolidayService.Holiday> flaggedHolidays =
+            flagAndSortHolidaysByBirthDate(holidays, birthDate);
 
         ID_Holiday_Search__c existingSearchRecord = findExistingIdHolidaySearch(idNumber);
 
@@ -71,7 +75,7 @@ public with sharing class BirthdateHolidaySearchService {
                 dateOfBirth,
                 gender,
                 saCitizen,
-                holidays
+                flaggedHolidays
             );
         }
 
@@ -80,7 +84,7 @@ public with sharing class BirthdateHolidaySearchService {
             dateOfBirth,
             gender,
             saCitizen,
-            holidays
+            flaggedHolidays
         );
     }
 
@@ -118,17 +122,60 @@ public with sharing class BirthdateHolidaySearchService {
 
     /**
      * Author      : pkrammekwa
-     * Description : Gets the year value from the decoded date of birth.
+     * Description : Converts the decoded date of birth string into a Date value.
      *
      * @param dateOfBirth The decoded date of birth from the ID number.
-     * @return Integer
+     * @return Date
      */
-    private static Integer getYearFromDateOfBirth(String dateOfBirth) {
+    private static Date getBirthDate(String dateOfBirth) {
         try {
-            return Date.valueOf(dateOfBirth).year();
+            return Date.valueOf(dateOfBirth);
         } catch (Exception exceptionMessage) {
             throw new BirthdateHolidayException('Date of birth is invalid.');
         }
+    }
+
+    /**
+     * Author      : pkrammekwa
+     * Description : Flags holidays matching the birth date month and day, then moves matching holidays to the top.
+     *
+     * @param holidays  The public holidays returned from Calendarific.
+     * @param birthDate The decoded birth date from the South African ID number.
+     * @return List<CalendarificHolidayService.Holiday>
+     */
+    private static List<CalendarificHolidayService.Holiday> flagAndSortHolidaysByBirthDate(
+        List<CalendarificHolidayService.Holiday> holidays,
+        Date birthDate
+    ) {
+        List<CalendarificHolidayService.Holiday> matchingHolidays =
+            new List<CalendarificHolidayService.Holiday>();
+        List<CalendarificHolidayService.Holiday> otherHolidays =
+            new List<CalendarificHolidayService.Holiday>();
+
+        if (holidays == null || birthDate == null) {
+            return new List<CalendarificHolidayService.Holiday>();
+        }
+
+        for (CalendarificHolidayService.Holiday holiday : holidays) {
+            holiday.matchesBirthDate = false;
+
+            if (!String.isBlank(holiday.dateValue)) {
+                Date holidayDate = Date.valueOf(holiday.dateValue);
+
+                holiday.matchesBirthDate =
+                    holidayDate.month() == birthDate.month() &&
+                    holidayDate.day() == birthDate.day();
+            }
+
+            if (holiday.matchesBirthDate) {
+                matchingHolidays.add(holiday);
+            } else {
+                otherHolidays.add(holiday);
+            }
+        }
+
+        matchingHolidays.addAll(otherHolidays);
+        return matchingHolidays;
     }
 
     /**

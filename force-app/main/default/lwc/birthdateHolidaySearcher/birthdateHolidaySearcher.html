@@ -61,8 +61,12 @@
                     <h3 class="holidays-title">South African Public Holidays</h3>
 
                     <template for:each={holidays} for:item="holiday">
-                        <article key={holiday.dateValue} class="holiday-card">
+                        <article key={holiday.dateValue} class={holiday.cardClass}>
                             <div>
+                                <template if:true={holiday.matchesBirthDate}>
+                                    <span class="match-badge">{holiday.matchLabel}</span>
+                                </template>
+
                                 <h4 class="holiday-name">{holiday.name}</h4>
                                 <p class="holiday-description">{holiday.description}</p>
                             </div>

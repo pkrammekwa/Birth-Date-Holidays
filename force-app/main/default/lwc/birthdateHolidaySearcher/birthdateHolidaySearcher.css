@@ -120,3 +120,21 @@
 .clear-button {
     cursor: pointer;
 }
+
+.matching-holiday-card {
+    border-color: #2e844a;
+    background: #eefcf6;
+}
+
+.match-badge {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: #2e844a;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}

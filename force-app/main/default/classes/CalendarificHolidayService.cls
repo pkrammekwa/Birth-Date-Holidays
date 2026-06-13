@@ -135,6 +135,7 @@ public with sharing class CalendarificHolidayService {
         @AuraEnabled public String description;
         @AuraEnabled public String dateValue;
         @AuraEnabled public String type;
+        @AuraEnabled public Boolean matchesBirthDate;
 
         /**
          * Author      : pkrammekwa
@@ -155,6 +156,7 @@ public with sharing class CalendarificHolidayService {
             this.description = description;
             this.dateValue = dateValue;
             this.type = type;
+            this.matchesBirthDate = false;
         }
     }
 }
