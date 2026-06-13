@@ -432,6 +432,13 @@ Open the Salesforce App Launcher and select:
 Birth Date Holidays
 ```
 
+## Deployment Manifest
+
+The project includes a Salesforce deployment manifest at:
+
+```text
+manifest/package.xml
+
 ---
 
 ## How to Use
