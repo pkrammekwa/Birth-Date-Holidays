@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>BirthdateHolidayException</members>
+        <members>BirthdateHolidaySearchController</members>
+        <members>BirthdateHolidaySearchControllerTest</members>
+        <members>BirthdateHolidaySearchService</members>
+        <members>BirthdateHolidaySearchServiceTest</members>
+        <members>CalendarificHolidayApiMock</members>
+        <members>CalendarificHolidayService</members>
+        <members>CalendarificHolidayServiceTest</members>
+        <members>HttpClient</members>
+        <members>HttpClientTest</members>
+        <name>ApexClass</name>
+    </types>
+
+    <types>
+        <members>birthdateHolidaySearcher</members>
+        <name>LightningComponentBundle</name>
+    </types>
+
+    <types>
+        <members>Birth_Date_Holidays</members>
+        <name>CustomApplication</name>
+    </types>
+
+    <types>
+        <members>ID_Holiday_Search__c</members>
+        <members>Calendarific_Setting__mdt</members>
+        <name>CustomObject</name>
+    </types>
+
+    <types>
+        <members>ID_Holiday_Search__c.ID_Number__c</members>
+        <members>ID_Holiday_Search__c.Date_Of_Birth__c</members>
+        <members>ID_Holiday_Search__c.Gender__c</members>
+        <members>ID_Holiday_Search__c.SA_Citizen__c</members>
+        <members>ID_Holiday_Search__c.Search_Count__c</members>
+        <members>Calendarific_Setting__mdt.Api_Key__c</members>
+        <name>CustomField</name>
+    </types>
+
+    <types>
+        <members>Calendarific_Setting.Calendarific_API_key</members>
+        <name>CustomMetadata</name>
+    </types>
+
+    <types>
+        <members>Calendarific</members>
+        <name>NamedCredential</name>
+    </types>
+
+    <types>
+        <members>Calendarific_External_Credential</members>
+        <name>ExternalCredential</name>
+    </types>
+
+    <types>
+        <members>Birthdate_Holiday_Searcher</members>
+        <name>PermissionSet</name>
+    </types>
+
+    <version>66.0</version>
+</Package>
