@@ -32,6 +32,47 @@
     font-weight: 600;
 }
 
+.decoded-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #dddbda;
+    border-radius: 0.25rem;
+    background: #fafafa;
+}
+
+.decoded-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.decoded-list {
+    margin: 0;
+}
+
+.decoded-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.decoded-row:last-child {
+    border-bottom: none;
+}
+
+.decoded-row dt {
+    font-weight: 700;
+    color: #3e3e3c;
+}
+
+.decoded-row dd {
+    margin: 0;
+    color: #181818;
+    text-align: right;
+}
+
 .actions {
     margin-top: 1rem;
     display: flex;

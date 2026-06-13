@@ -1,11 +1,12 @@
 <template>
-    <lightning-card title="South African ID Holiday Searcher" icon-name="standard:search">
+    <lightning-card title="Birthdate Holiday Searcher" icon-name="standard:search">
         <div class="slds-p-around_medium">
             <section class="info-section">
-                <h2 class="title">Search public holidays based on ID Number birth date</h2>
+                <h2 class="title">Check public holidays on your date of birth</h2>
                 <p class="description">
-                    Enter a South African ID Number to check whether any important public holidays
-                    fall on an ID Number date of birth.
+                    Enter your South African ID Number to check whether any important public holidays
+                    fall on your date of birth. The ID Number will first be validated and decoded into
+                    its relevant information.
                 </p>
             </section>
 
@@ -21,15 +22,32 @@
                 required>
             </lightning-input>
 
-            <template if:true={errorMessage}>
-                <div class="error-message" role="alert">
-                    {errorMessage}
+            <template if:true={validationMessage}>
+                <div class={validationMessageClass} role="alert">
+                    {validationMessage}
                 </div>
             </template>
 
-            <template if:true={successMessage}>
-                <div class="success-message" role="status">
-                    {successMessage}
+            <template if:true={decodedIdDetails}>
+                <div class="decoded-section">
+                    <h3 class="decoded-title">Decoded ID Information</h3>
+
+                    <dl class="decoded-list">
+                        <div class="decoded-row">
+                            <dt>Date of Birth</dt>
+                            <dd>{decodedIdDetails.dateOfBirth}</dd>
+                        </div>
+
+                        <div class="decoded-row">
+                            <dt>Gender</dt>
+                            <dd>{decodedIdDetails.gender}</dd>
+                        </div>
+
+                        <div class="decoded-row">
+                            <dt>Citizenship</dt>
+                            <dd>{decodedIdDetails.citizenship}</dd>
+                        </div>
+                    </dl>
                 </div>
             </template>
 
@@ -38,6 +56,7 @@
                     label="Search"
                     variant="brand"
                     onclick={handleSearch}
+                    disabled={isSearchDisabled}
                     class="search-button">
                 </lightning-button>
 

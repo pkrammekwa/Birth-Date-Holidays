@@ -1,34 +1,59 @@
 import { LightningElement } from 'lwc';
+import {
+    validateSouthAfricanIdNumber,
+    decodeSouthAfricanIdNumber
+} from './birthdateHolidaySearcherUtils';
 
 export default class BirthdateHolidaySearcher extends LightningElement {
     idNumber = '';
-    errorMessage = '';
-    successMessage = '';
+    validationMessage = '';
+    isValidIdNumber = false;
+    decodedIdDetails;
+
+    get isSearchDisabled() {
+        return !this.isValidIdNumber;
+    }
+
+    get validationMessageClass() {
+        return this.isValidIdNumber ? 'success-message' : 'error-message';
+    }
 
     handleIdNumberChange(event) {
-        this.idNumber = event.target.value;
-        this.errorMessage = '';
-        this.successMessage = '';
+        this.idNumber = event.target.value.replace(/\D/g, '');
+        this.decodedIdDetails = undefined;
+        this.validateIdNumber();
     }
 
     handleSearch() {
-        this.errorMessage = '';
-        this.successMessage = '';
-
-        const idInput = this.template.querySelector('lightning-input[name="idNumber"]');
-
-        if (!this.idNumber) {
-            this.errorMessage = 'Please enter a South African ID Number before searching.';
-            idInput.reportValidity();
+        if (!this.isValidIdNumber) {
+            this.validationMessage = 'Please enter a valid South African ID Number before searching.';
+            this.decodedIdDetails = undefined;
             return;
         }
 
-        this.successMessage = 'Search action executed successfully.';
+        this.decodedIdDetails = decodeSouthAfricanIdNumber(this.idNumber);
+        this.validationMessage = 'Valid ID Number. Search action executed successfully.';
     }
 
     handleClear() {
         this.idNumber = '';
-        this.errorMessage = '';
-        this.successMessage = '';
+        this.validationMessage = '';
+        this.isValidIdNumber = false;
+        this.decodedIdDetails = undefined;
+    }
+
+    validateIdNumber() {
+        this.validationMessage = '';
+        this.isValidIdNumber = false;
+
+        const validationResult = validateSouthAfricanIdNumber(this.idNumber);
+
+        if (!validationResult.isValid) {
+            this.validationMessage = validationResult.message;
+            return;
+        }
+
+        this.isValidIdNumber = true;
+        this.validationMessage = 'Valid South African ID Number.';
     }
 }
