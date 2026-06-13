@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Allows users to enter a South African ID number, validate the date of birth, track search counts, and view South African public holidays for the birth year.</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>true</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Birth Date Holidays</label>
+    <navType>Standard</navType>
+    <tabs>Birth_Date_Holidays</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>Birth_Date_Holidays_UtilityBar</utilityBar>
+</CustomApplication>

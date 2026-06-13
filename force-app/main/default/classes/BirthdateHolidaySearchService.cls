@@ -5,54 +5,67 @@
  * Created Date    : Jun 13, 2026
  * Last Modified By: pkrammekwa
  * Last Modified On: Jun 13, 2026
- * Description     : This class stores decoded South African ID number information and tracks how often an ID number is queried.
+ * Description     : This class stores decoded South African ID number information, tracks query counts, and retrieves public holidays.
  *
  * Change History  :
  *  Date          │   Author      │   Change
  * ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
  *  Jun 13, 2026  │ pkrammekwa    │ Initial version
+ *  Jun 13, 2026  │ pkrammekwa    │ Updated for USERSTORY-004 to retrieve, flag, and return public holidays
  * ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
  */
 public with sharing class BirthdateHolidaySearchService {
-    public class CounterResult {
+    public class SearchResult {
         @AuraEnabled public Boolean success;
         @AuraEnabled public String message;
         @AuraEnabled public Id recordId;
         @AuraEnabled public Decimal searchCount;
         @AuraEnabled public Boolean wasCreated;
+        @AuraEnabled public List<CalendarificHolidayService.Holiday> holidays;
 
-        public CounterResult(
+        public SearchResult(
             Boolean success,
             String message,
             Id recordId,
             Decimal searchCount,
-            Boolean wasCreated
+            Boolean wasCreated,
+            List<CalendarificHolidayService.Holiday> holidays
         ) {
             this.success = success;
             this.message = message;
             this.recordId = recordId;
             this.searchCount = searchCount;
             this.wasCreated = wasCreated;
+            this.holidays = holidays;
         }
     }
 
     /**
      * Author      : pkrammekwa
-     * Description : Records a valid South African ID number query and returns the saved tracking result.
+     * Description : Processes the full birthdate holiday search by retrieving holidays first, flagging matching holidays, then saving or updating the ID query record.
      *
      * @param idNumber    The South African ID number submitted from the Lightning Web Component.
      * @param dateOfBirth The decoded date of birth from the ID number.
      * @param gender      The decoded gender from the ID number.
      * @param saCitizen   Indicates whether the ID number belongs to a South African citizen.
-     * @return CounterResult
+     * @return SearchResult
      */
-    public static CounterResult recordIdNumberQuery(
+    public static SearchResult processBirthdateHolidaySearch(
         String idNumber,
         String dateOfBirth,
         String gender,
         Boolean saCitizen
     ) {
         validateRequiredDetails(idNumber, dateOfBirth, gender, saCitizen);
+
+        Date birthDate = getBirthDate(dateOfBirth);
+        Integer yearValue = birthDate.year();
+
+        List<CalendarificHolidayService.Holiday> holidays =
+            CalendarificHolidayService.getSouthAfricanPublicHolidays(yearValue);
+
+        List<CalendarificHolidayService.Holiday> flaggedHolidays =
+            flagAndSortHolidaysByBirthDate(holidays, birthDate);
 
         ID_Holiday_Search__c existingSearchRecord = findExistingIdHolidaySearch(idNumber);
 
@@ -61,7 +74,8 @@ public with sharing class BirthdateHolidaySearchService {
                 existingSearchRecord,
                 dateOfBirth,
                 gender,
-                saCitizen
+                saCitizen,
+                flaggedHolidays
             );
         }
 
@@ -69,7 +83,8 @@ public with sharing class BirthdateHolidaySearchService {
             idNumber,
             dateOfBirth,
             gender,
-            saCitizen
+            saCitizen,
+            flaggedHolidays
         );
     }
 
@@ -89,20 +104,78 @@ public with sharing class BirthdateHolidaySearchService {
         Boolean saCitizen
     ) {
         if (String.isBlank(idNumber)) {
-            throw new AuraHandledException('ID Number is required.');
+            throw new BirthdateHolidayException('ID Number is required.');
         }
 
         if (String.isBlank(dateOfBirth)) {
-            throw new AuraHandledException('Date of birth is required.');
+            throw new BirthdateHolidayException('Date of birth is required.');
         }
 
         if (String.isBlank(gender)) {
-            throw new AuraHandledException('Gender is required.');
+            throw new BirthdateHolidayException('Gender is required.');
         }
 
         if (saCitizen == null) {
-            throw new AuraHandledException('SA citizen value is required.');
+            throw new BirthdateHolidayException('SA citizen value is required.');
         }
+    }
+
+    /**
+     * Author      : pkrammekwa
+     * Description : Converts the decoded date of birth string into a Date value.
+     *
+     * @param dateOfBirth The decoded date of birth from the ID number.
+     * @return Date
+     */
+    private static Date getBirthDate(String dateOfBirth) {
+        try {
+            return Date.valueOf(dateOfBirth);
+        } catch (Exception exceptionMessage) {
+            throw new BirthdateHolidayException('Date of birth is invalid.');
+        }
+    }
+
+    /**
+     * Author      : pkrammekwa
+     * Description : Flags holidays matching the birth date month and day, then moves matching holidays to the top.
+     *
+     * @param holidays  The public holidays returned from Calendarific.
+     * @param birthDate The decoded birth date from the South African ID number.
+     * @return List<CalendarificHolidayService.Holiday>
+     */
+    private static List<CalendarificHolidayService.Holiday> flagAndSortHolidaysByBirthDate(
+        List<CalendarificHolidayService.Holiday> holidays,
+        Date birthDate
+    ) {
+        List<CalendarificHolidayService.Holiday> matchingHolidays =
+            new List<CalendarificHolidayService.Holiday>();
+        List<CalendarificHolidayService.Holiday> otherHolidays =
+            new List<CalendarificHolidayService.Holiday>();
+
+        if (holidays == null || birthDate == null) {
+            return new List<CalendarificHolidayService.Holiday>();
+        }
+
+        for (CalendarificHolidayService.Holiday holiday : holidays) {
+            holiday.matchesBirthDate = false;
+
+            if (!String.isBlank(holiday.dateValue)) {
+                Date holidayDate = Date.valueOf(holiday.dateValue);
+
+                holiday.matchesBirthDate =
+                    holidayDate.month() == birthDate.month() &&
+                    holidayDate.day() == birthDate.day();
+            }
+
+            if (holiday.matchesBirthDate) {
+                matchingHolidays.add(holiday);
+            } else {
+                otherHolidays.add(holiday);
+            }
+        }
+
+        matchingHolidays.addAll(otherHolidays);
+        return matchingHolidays;
     }
 
     /**
@@ -142,13 +215,15 @@ public with sharing class BirthdateHolidaySearchService {
      * @param dateOfBirth          The decoded date of birth from the ID number.
      * @param gender               The decoded gender from the ID number.
      * @param saCitizen            Indicates whether the ID number belongs to a South African citizen.
-     * @return CounterResult
+     * @param holidays             The public holidays returned from Calendarific.
+     * @return SearchResult
      */
-    private static CounterResult updateExistingSearchRecord(
+    private static SearchResult updateExistingSearchRecord(
         ID_Holiday_Search__c existingSearchRecord,
         String dateOfBirth,
         String gender,
-        Boolean saCitizen
+        Boolean saCitizen,
+        List<CalendarificHolidayService.Holiday> holidays
     ) {
         existingSearchRecord.Date_Of_Birth__c = Date.valueOf(dateOfBirth);
         existingSearchRecord.Gender__c = gender;
@@ -157,12 +232,13 @@ public with sharing class BirthdateHolidaySearchService {
 
         update existingSearchRecord;
 
-        return new CounterResult(
+        return new SearchResult(
             true,
             'ID number query recorded successfully.',
             existingSearchRecord.Id,
             existingSearchRecord.Search_Count__c,
-            false
+            false,
+            holidays
         );
     }
 
@@ -174,13 +250,15 @@ public with sharing class BirthdateHolidaySearchService {
      * @param dateOfBirth The decoded date of birth from the ID number.
      * @param gender      The decoded gender from the ID number.
      * @param saCitizen   Indicates whether the ID number belongs to a South African citizen.
-     * @return CounterResult
+     * @param holidays    The public holidays returned from Calendarific.
+     * @return SearchResult
      */
-    private static CounterResult createSearchRecord(
+    private static SearchResult createSearchRecord(
         String idNumber,
         String dateOfBirth,
         String gender,
-        Boolean saCitizen
+        Boolean saCitizen,
+        List<CalendarificHolidayService.Holiday> holidays
     ) {
         ID_Holiday_Search__c newSearchRecord = new ID_Holiday_Search__c(
             ID_Number__c = idNumber,
@@ -192,12 +270,13 @@ public with sharing class BirthdateHolidaySearchService {
 
         insert newSearchRecord;
 
-        return new CounterResult(
+        return new SearchResult(
             true,
             'ID number query recorded successfully.',
             newSearchRecord.Id,
             newSearchRecord.Search_Count__c,
-            true
+            true,
+            holidays
         );
     }
 }
