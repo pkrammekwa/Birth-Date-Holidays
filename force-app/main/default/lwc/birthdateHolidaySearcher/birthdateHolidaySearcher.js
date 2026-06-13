@@ -20,15 +20,18 @@ export default class BirthdateHolidaySearcher extends LightningElement {
 
     handleIdNumberChange(event) {
         this.idNumber = event.target.value.replace(/\D/g, '');
+        this.decodedIdDetails = undefined;
         this.validateIdNumber();
     }
 
     handleSearch() {
         if (!this.isValidIdNumber) {
             this.validationMessage = 'Please enter a valid South African ID Number before searching.';
+            this.decodedIdDetails = undefined;
             return;
         }
 
+        this.decodedIdDetails = decodeSouthAfricanIdNumber(this.idNumber);
         this.validationMessage = 'Valid ID Number. Search action executed successfully.';
     }
 
@@ -42,7 +45,6 @@ export default class BirthdateHolidaySearcher extends LightningElement {
     validateIdNumber() {
         this.validationMessage = '';
         this.isValidIdNumber = false;
-        this.decodedIdDetails = undefined;
 
         const validationResult = validateSouthAfricanIdNumber(this.idNumber);
 
@@ -52,7 +54,6 @@ export default class BirthdateHolidaySearcher extends LightningElement {
         }
 
         this.isValidIdNumber = true;
-        this.decodedIdDetails = decodeSouthAfricanIdNumber(this.idNumber);
         this.validationMessage = 'Valid South African ID Number.';
     }
 }
