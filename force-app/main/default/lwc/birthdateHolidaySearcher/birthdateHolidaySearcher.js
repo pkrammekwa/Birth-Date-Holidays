@@ -1,5 +1,5 @@
 import { LightningElement } from 'lwc';
-import recordIdNumberQuery from '@salesforce/apex/BirthdateHolidaySearchController.recordIdNumberQuery';
+import processBirthdateHolidaySearch from '@salesforce/apex/BirthdateHolidaySearchController.processBirthdateHolidaySearch';
 import {
     validateSouthAfricanIdNumber,
     decodeSouthAfricanIdNumber
@@ -10,6 +10,7 @@ export default class BirthdateHolidaySearcher extends LightningElement {
     validationMessage = '';
     isValidIdNumber = false;
     decodedIdDetails;
+    holidays = [];
     isLoading = false;
 
     get isSearchDisabled() {
@@ -24,9 +25,14 @@ export default class BirthdateHolidaySearcher extends LightningElement {
         return this.isLoading ? 'Searching...' : 'Search';
     }
 
+    get hasHolidays() {
+        return this.holidays.length > 0;
+    }
+
     handleIdNumberChange(event) {
         this.idNumber = event.target.value.replace(/\D/g, '');
         this.decodedIdDetails = undefined;
+        this.holidays = [];
         this.validateIdNumber();
     }
 
@@ -34,16 +40,18 @@ export default class BirthdateHolidaySearcher extends LightningElement {
         if (!this.isValidIdNumber) {
             this.validationMessage = 'Please enter a valid South African ID Number before searching.';
             this.decodedIdDetails = undefined;
+            this.holidays = [];
             return;
         }
 
         this.isLoading = true;
         this.validationMessage = '';
+        this.holidays = [];
 
         try {
             const decodedDetails = decodeSouthAfricanIdNumber(this.idNumber);
 
-            const response = await recordIdNumberQuery({
+            const response = await processBirthdateHolidaySearch({
                 idNumber: this.idNumber,
                 dateOfBirth: decodedDetails.dateOfBirth,
                 gender: decodedDetails.gender,
@@ -55,11 +63,13 @@ export default class BirthdateHolidaySearcher extends LightningElement {
                 searchCount: response.searchCount
             };
 
+            this.holidays = response.holidays || [];
             this.validationMessage = response.message;
         } catch (error) {
             this.decodedIdDetails = undefined;
+            this.holidays = [];
             this.validationMessage =
-                error?.body?.message || 'Something went wrong while recording the ID number query.';
+                error?.body?.message || 'Something went wrong while processing the birthdate holiday search.';
         } finally {
             this.isLoading = false;
         }
@@ -70,6 +80,7 @@ export default class BirthdateHolidaySearcher extends LightningElement {
         this.validationMessage = '';
         this.isValidIdNumber = false;
         this.decodedIdDetails = undefined;
+        this.holidays = [];
         this.isLoading = false;
     }
 

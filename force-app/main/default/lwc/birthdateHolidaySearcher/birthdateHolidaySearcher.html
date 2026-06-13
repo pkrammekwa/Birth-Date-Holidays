@@ -56,6 +56,26 @@
                 </div>
             </template>
 
+            <template if:true={hasHolidays}>
+                <div class="holidays-section">
+                    <h3 class="holidays-title">South African Public Holidays</h3>
+
+                    <template for:each={holidays} for:item="holiday">
+                        <article key={holiday.dateValue} class="holiday-card">
+                            <div>
+                                <h4 class="holiday-name">{holiday.name}</h4>
+                                <p class="holiday-description">{holiday.description}</p>
+                            </div>
+
+                            <div class="holiday-meta">
+                                <span>{holiday.dateValue}</span>
+                                <span>{holiday.type}</span>
+                            </div>
+                        </article>
+                    </template>
+                </div>
+            </template>
+
             <div class="actions">
                 <lightning-button
                     label={searchButtonLabel}
