@@ -29,6 +29,10 @@
         <name>Calendarific_Setting__mdt</name>
     </customMetadataTypeAccesses>
     <description>Grants access to Calendarific External Credential</description>
+    <externalCredentialPrincipalAccesses>
+        <enabled>true</enabled>
+        <externalCredentialPrincipal>Calendarific_External_Credential-NoAuth</externalCredentialPrincipal>
+    </externalCredentialPrincipalAccesses>
     <fieldPermissions>
         <editable>true</editable>
         <field>ID_Holiday_Search__c.Gender__c</field>
